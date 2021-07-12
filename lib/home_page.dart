@@ -9,6 +9,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late GoogleMapController _googleMapController;
   String _dropdownValue = "Normal";
 
   List<String> _mapTypeTextList = [
@@ -44,7 +45,7 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   _dropdownValue = value!;
                   for (int i = 0; i < _mapTypeTextList.length; i++) {
-                    if(_dropdownValue == _mapTypeTextList[i]){
+                    if (_dropdownValue == _mapTypeTextList[i]) {
                       _mapType = _mapTypeList[i];
                     }
                   }
@@ -63,11 +64,31 @@ class _HomePageState extends State<HomePage> {
               initialCameraPosition: CameraPosition(
                 target: LatLng(37.4219999, -122.0862462),
               ),
-              onMapCreated: (controller) {},
+              onMapCreated: (controller) {
+                _googleMapController = controller;
+              },
               mapType: _mapType,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              rotateGesturesEnabled: false,
+              // scrollGesturesEnabled: false,
+              tiltGesturesEnabled: false,
+              zoomControlsEnabled: false,
+              zoomGesturesEnabled: true,
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.location_searching),
+        onPressed: () {
+          _googleMapController.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                  target: LatLng(37.4219999, -122.0862462), zoom: 20.0),
+            ),
+          );
+        },
       ),
     );
   }
