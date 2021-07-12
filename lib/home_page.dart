@@ -1,5 +1,7 @@
+import 'package:android_intent/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:flutter/cupertino.dart';
 
@@ -11,6 +13,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late GoogleMapController _googleMapController;
   String _dropdownValue = "Normal";
+  late Permission _permission;
+  PermissionStatus _permissionStatus = PermissionStatus.denied;
 
   List<String> _mapTypeTextList = [
     "None",
@@ -28,6 +32,57 @@ class _HomePageState extends State<HomePage> {
     MapType.terrain,
     MapType.hybrid
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  void openLocationSetting() async {
+    final AndroidIntent intent = new AndroidIntent(
+      action: 'android.settings.LOCATION_SOURCE_SETTINGS',
+    );
+    await intent.launch();
+  }
+
+  Future<void> _checkPermission() async {
+    final serviceStatus = await Permission.locationWhenInUse.serviceStatus;
+    final isGpsOn = serviceStatus == ServiceStatus.enabled;
+    if (!isGpsOn) {
+      openLocationSetting();
+      print('Turn on location services before requesting permission.');
+      return;
+    }
+
+    final status = await Permission.locationWhenInUse.request();
+    if (status == PermissionStatus.granted) {
+      _googleMapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(37.4219999, -122.0862462),
+            zoom: 20.0,
+          ),
+        ),
+      );
+      print('Permission granted');
+    } else if (status == PermissionStatus.denied) {
+      print('Permission denied. Show a dialog and again ask for the permission');
+    } else if (status == PermissionStatus.permanentlyDenied) {
+      print('Take the user to the settings page.');
+      await openAppSettings();
+    }
+  }
+
+  Future<void> _requestPermission(Permission permission) async {
+    final status = await permission.request();
+
+    setState(() {
+      print(status);
+      _permissionStatus = status;
+      print(_permissionStatus);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,12 +137,8 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.location_searching),
         onPressed: () {
-          _googleMapController.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                  target: LatLng(37.4219999, -122.0862462), zoom: 20.0),
-            ),
-          );
+          //todo
+          _checkPermission();
         },
       ),
     );

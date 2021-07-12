@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app does not access your location.</string>
+    <string>App needs location permission to work</string>
     <key>io.flutter.embedded_views_preview</key>
     <true/>
 	<key>CFBundleDevelopmentRegion</key>
